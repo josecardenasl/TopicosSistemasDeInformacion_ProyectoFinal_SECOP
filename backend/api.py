@@ -14,7 +14,7 @@ from langchain_community.document_loaders import PyMuPDFLoader
 from langchain_community.retrievers import BM25Retriever
 from langchain_classic.retrievers import EnsembleRetriever
 from langchain_text_splitters import RecursiveCharacterTextSplitter
-from langchain_huggingface import HuggingFaceEmbeddings
+from langchain_community.embeddings import FastEmbedEmbeddings
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_qdrant import QdrantVectorStore
 from langchain_core.prompts import PromptTemplate
@@ -148,10 +148,7 @@ def format_docs(docs):
 
 
 def load_vectorstore():
-    embeddings = HuggingFaceEmbeddings(
-        model_name=EMBED_MODEL,
-        model_kwargs={"device": "cpu"},
-    )
+    embeddings = FastEmbedEmbeddings(model_name=EMBED_MODEL)
     client = QdrantClient(url=QDRANT_URL, api_key=QDRANT_API_KEY)
     return QdrantVectorStore(
         client=client,
