@@ -2,7 +2,7 @@
 
 **URL de la app:** https://secop-frontend-miguel-c-projects.vercel.app/ 
 
-**Video demo (Loom):** _[completar]_  
+**Video demo (Youtube): https://youtu.be/6qDK43SMk2Y
 
 **Equipo:** Miguel Angel Correa Piedrahita, Jose David Cardenas Lucas, Julian Osorio Alturo
 
