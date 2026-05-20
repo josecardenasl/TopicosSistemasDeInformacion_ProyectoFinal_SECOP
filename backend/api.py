@@ -10,9 +10,6 @@ from fastapi import FastAPI, HTTPException, BackgroundTasks
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
-from langchain_community.document_loaders import PyMuPDFLoader
-from langchain_community.retrievers import BM25Retriever
-from langchain_classic.retrievers import EnsembleRetriever
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 import requests as http_requests
 from langchain_core.embeddings import Embeddings
@@ -186,24 +183,11 @@ def load_vectorstore():
 
 def build_rag_chain(vectorstore):
     llm = ChatGoogleGenerativeAI(model=LLM_MODEL, google_api_key=GOOGLE_API_KEY)
-    vector_retriever = vectorstore.as_retriever(
+    retriever = vectorstore.as_retriever(
         search_type="similarity",
         search_kwargs={"k": TOP_K},
     )
-    chunks = load_chunks()
-    if chunks:
-        bm25_retriever = BM25Retriever.from_documents(
-            chunks, preprocess_func=bm25_preprocess
-        )
-        bm25_retriever.k = TOP_K
-        retriever = EnsembleRetriever(
-            retrievers=[bm25_retriever, vector_retriever],
-            weights=[BM25_WEIGHT, 1 - BM25_WEIGHT],
-        )
-        print(f"Búsqueda híbrida lista ({len(chunks)} chunks BM25 + Qdrant Cloud)")
-    else:
-        retriever = vector_retriever
-        print("Sin PDFs locales. Usando solo búsqueda semántica (Qdrant Cloud).")
+    print("Búsqueda semántica lista (Qdrant Cloud).")
     chain = (
         {"context": retriever | RunnableLambda(format_docs), "question": RunnablePassthrough()}
         | prompt
