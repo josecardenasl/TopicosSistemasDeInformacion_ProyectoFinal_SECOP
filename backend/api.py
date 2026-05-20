@@ -14,7 +14,8 @@ from langchain_community.document_loaders import PyMuPDFLoader
 from langchain_community.retrievers import BM25Retriever
 from langchain_classic.retrievers import EnsembleRetriever
 from langchain_text_splitters import RecursiveCharacterTextSplitter
-from langchain_community.embeddings import FastEmbedEmbeddings
+import requests as http_requests
+from langchain_core.embeddings import Embeddings
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_qdrant import QdrantVectorStore
 from langchain_core.prompts import PromptTemplate
@@ -25,8 +26,8 @@ from qdrant_client import QdrantClient
 load_dotenv(find_dotenv())
 
 DATA_DIR        = os.path.join(os.path.dirname(__file__), "..", "data")
-EMBED_MODEL     = "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2"
-COLLECTION_NAME = "secop_licitaciones"
+EMBED_MODEL     = "gemini-embedding-001"
+COLLECTION_NAME = "secop_licitaciones_v2"
 LLM_MODEL       = "gemini-2.5-flash"
 TOP_K           = 12
 CHUNK_SIZE      = 1500
@@ -61,6 +62,32 @@ Contexto:
 Pregunta del usuario: {question}
 
 Respuesta:"""
+
+class GoogleEmbeddings(Embeddings):
+    """Llama directamente a la REST API de Google para evitar problemas de versión de SDK."""
+    BASE_URL = "https://generativelanguage.googleapis.com/v1beta/models"
+
+    def __init__(self, api_key: str, model: str = EMBED_MODEL):
+        self.api_key = api_key
+        self.model = model
+
+    def _embed(self, text: str) -> list[float]:
+        url = f"{self.BASE_URL}/{self.model}:embedContent"
+        r = http_requests.post(
+            url,
+            params={"key": self.api_key},
+            json={"content": {"parts": [{"text": text}]}},
+            timeout=30,
+        )
+        r.raise_for_status()
+        return r.json()["embedding"]["values"]
+
+    def embed_documents(self, texts: list[str]) -> list[list[float]]:
+        return [self._embed(t) for t in texts]
+
+    def embed_query(self, text: str) -> list[float]:
+        return self._embed(text)
+
 
 prompt = PromptTemplate(
     template=PROMPT_TEMPLATE,
@@ -148,7 +175,7 @@ def format_docs(docs):
 
 
 def load_vectorstore():
-    embeddings = FastEmbedEmbeddings(model_name=EMBED_MODEL)
+    embeddings = GoogleEmbeddings(api_key=GOOGLE_API_KEY)
     client = QdrantClient(url=QDRANT_URL, api_key=QDRANT_API_KEY)
     return QdrantVectorStore(
         client=client,
