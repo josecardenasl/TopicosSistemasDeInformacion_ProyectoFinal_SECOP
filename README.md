@@ -1,8 +1,11 @@
 # SECOP Inteligente — Buscador Semántico de Licitaciones para PYMES
 
 **URL de la app:** https://secop-frontend-miguel-c-projects.vercel.app/ 
+
 **Video demo (Loom):** _[completar]_  
+
 **Equipo:** Miguel Angel Correa Piedrahita, Jose David Cardenas Lucas, Julian Osorio Alturo
+
 **Curso:** Tópicos de Sistemas de Información · EAFIT · Mayo 2026
 
 ---
