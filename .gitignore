@@ -1,0 +1,18 @@
+venv/
+.claude/
+memory/
+__pycache__/
+*.pyc
+.env
+.env.local
+vectorstore/
+examples/
+/output
+/data
+backend/alerts.db
+
+# Frontend
+frontend/node_modules/
+frontend/.next/
+frontend/.env.local
+
